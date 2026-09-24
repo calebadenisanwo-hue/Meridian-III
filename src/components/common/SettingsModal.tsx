@@ -96,12 +96,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     Haptics.light();
     setStatusMsg({ text: 'Syncing telemetry with cloud database...' });
     try {
-      const ok = await syncToSupabase();
-      if (ok) {
+      const res = await syncToSupabase();
+      if (res.success) {
         setStatusMsg({ text: 'Cloud telemetry successfully synced!' });
         setLastSyncTime(getLastSyncTime());
       } else {
-        setStatusMsg({ text: 'Sync failed. Please check internet connection.', isError: true });
+        setStatusMsg({ text: res.message || 'Sync failed. Please check internet connection.', isError: true });
       }
     } catch {
       setStatusMsg({ text: 'Error executing cloud sync.', isError: true });

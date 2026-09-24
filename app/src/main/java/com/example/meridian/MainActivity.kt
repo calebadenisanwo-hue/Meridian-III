@@ -64,61 +64,65 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(innerPadding)
                     ) {
-                        when (state.currentRoute) {
-                            ModuleRoute.OVERVIEW -> OverviewScreen(
-                                state = state,
-                                onNavigate = { viewModel.navigateTo(it) },
-                                onUpdateWeights = { viewModel.updateWeights(it) }
-                            )
-                            ModuleRoute.TIMELINE -> TimelineScreen(
-                                timelineItems = state.timeline
-                            )
-                            ModuleRoute.JOURNAL -> JournalScreen(
-                                entries = state.journalEntries,
-                                onAddEntry = { text, tag, pinned -> viewModel.addJournalEntry(text, tag, pinned) },
-                                onTogglePin = { viewModel.toggleJournalPin(it) },
-                                onDeleteEntry = { viewModel.deleteJournal(it) }
-                            )
-                            ModuleRoute.STUDY -> StudyScreen(
-                                studyLogs = state.studyLogs,
-                                completedTopicIds = state.completedTopicIds,
-                                onLogSession = { dur, subj, top, note, focus ->
-                                    viewModel.logStudySession(dur, subj, top, note, focus)
-                                },
-                                onToggleTopicDone = { id, done -> viewModel.toggleTopicDone(id, done) }
-                            )
-                            ModuleRoute.RECOVERY -> RecoveryScreen(
-                                quits = state.recoveryQuits,
-                                logs = state.recoveryLogs,
-                                onLogUrge = { quitId, note -> viewModel.logUrge(quitId, note) },
-                                onLogReset = { quitId, reason -> viewModel.logReset(quitId, reason) },
-                                onOpenGrounding = { showGroundingModal = true }
-                            )
-                            ModuleRoute.FINANCE -> FinanceScreen(
-                                accounts = state.financeAccounts,
-                                categories = state.financeCategories,
-                                transactions = state.financeTransactions,
-                                onAddTransaction = { type, amt, merchant, cat, note ->
-                                    viewModel.addTransaction(type, amt, merchant, cat, note)
-                                },
-                                onDeleteTransaction = { viewModel.deleteTransaction(it) }
-                            )
-                            ModuleRoute.PULSE -> PulseScreen(
-                                pulseLogs = state.pulseLogs,
-                                habits = state.pulseHabits,
-                                onLogPulse = { sleep, quality, mood, energy, focus, note ->
-                                    viewModel.logPulse(sleep, quality, mood, energy, focus, note)
-                                }
-                            )
-                            ModuleRoute.GOALS -> GoalsScreen(
-                                goals = state.goals,
-                                checkins = state.goalCheckins,
-                                onAddGoal = { title, cat, target, unit, deadline ->
-                                    viewModel.addGoal(title, cat, target, unit, deadline)
-                                },
-                                onLogCheckin = { id, inc, note -> viewModel.logGoalCheckin(id, inc, note) },
-                                onDeleteGoal = { viewModel.deleteGoal(it) }
-                            )
+                        if (state.isLoading) {
+                            OverviewSkeleton()
+                        } else {
+                            when (state.currentRoute) {
+                                ModuleRoute.OVERVIEW -> OverviewScreen(
+                                    state = state,
+                                    onNavigate = { viewModel.navigateTo(it) },
+                                    onUpdateWeights = { viewModel.updateWeights(it) }
+                                )
+                                ModuleRoute.TIMELINE -> TimelineScreen(
+                                    timelineItems = state.timeline
+                                )
+                                ModuleRoute.JOURNAL -> JournalScreen(
+                                    entries = state.journalEntries,
+                                    onAddEntry = { text, tag, pinned -> viewModel.addJournalEntry(text, tag, pinned) },
+                                    onTogglePin = { viewModel.toggleJournalPin(it) },
+                                    onDeleteEntry = { viewModel.deleteJournal(it) }
+                                )
+                                ModuleRoute.STUDY -> StudyScreen(
+                                    studyLogs = state.studyLogs,
+                                    completedTopicIds = state.completedTopicIds,
+                                    onLogSession = { dur, subj, top, note, focus ->
+                                        viewModel.logStudySession(dur, subj, top, note, focus)
+                                    },
+                                    onToggleTopicDone = { id, done -> viewModel.toggleTopicDone(id, done) }
+                                )
+                                ModuleRoute.RECOVERY -> RecoveryScreen(
+                                    quits = state.recoveryQuits,
+                                    logs = state.recoveryLogs,
+                                    onLogUrge = { quitId, note -> viewModel.logUrge(quitId, note) },
+                                    onLogReset = { quitId, reason -> viewModel.logReset(quitId, reason) },
+                                    onOpenGrounding = { showGroundingModal = true }
+                                )
+                                ModuleRoute.FINANCE -> FinanceScreen(
+                                    accounts = state.financeAccounts,
+                                    categories = state.financeCategories,
+                                    transactions = state.financeTransactions,
+                                    onAddTransaction = { type, amt, merchant, cat, note ->
+                                        viewModel.addTransaction(type, amt, merchant, cat, note)
+                                    },
+                                    onDeleteTransaction = { viewModel.deleteTransaction(it) }
+                                )
+                                ModuleRoute.PULSE -> PulseScreen(
+                                    pulseLogs = state.pulseLogs,
+                                    habits = state.pulseHabits,
+                                    onLogPulse = { sleep, quality, mood, energy, focus, note ->
+                                        viewModel.logPulse(sleep, quality, mood, energy, focus, note)
+                                    }
+                                )
+                                ModuleRoute.GOALS -> GoalsScreen(
+                                    goals = state.goals,
+                                    checkins = state.goalCheckins,
+                                    onAddGoal = { title, cat, target, unit, deadline ->
+                                        viewModel.addGoal(title, cat, target, unit, deadline)
+                                    },
+                                    onLogCheckin = { id, inc, note -> viewModel.logGoalCheckin(id, inc, note) },
+                                    onDeleteGoal = { viewModel.deleteGoal(it) }
+                                )
+                            }
                         }
                     }
 

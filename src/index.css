@@ -188,3 +188,26 @@
 ::-webkit-scrollbar-thumb:hover {
   background: var(--md-sys-color-outline, #8a938c);
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   MATERIAL 3 SKELETON LOADER (Shimmer & Pulsing Tonal Shapes)
+   ══════════════════════════════════════════════════════════════════════ */
+@keyframes m3Shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.m3-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--md-sys-color-surface-container, rgba(255, 255, 255, 0.04)) 0%,
+    var(--md-sys-color-surface-container-highest, rgba(255, 255, 255, 0.12)) 50%,
+    var(--md-sys-color-surface-container, rgba(255, 255, 255, 0.04)) 100%
+  );
+  background-size: 200% 100%;
+  animation: m3Shimmer 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

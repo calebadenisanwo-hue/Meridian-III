@@ -175,9 +175,41 @@ export async function testSupabaseConnection(customConfig?: SupabaseConfig): Pro
 /**
  * Pushes all Meridian local data bundles to Supabase
  */
-export async function syncToSupabase(payload: Record<string, any>): Promise<SyncResult> {
+export async function syncToSupabase(payload?: Record<string, any>): Promise<SyncResult> {
   const timestamp = new Date().toISOString();
   setSyncState('syncing');
+
+  const resolvedPayload = payload || (() => {
+    try {
+      const keys = [
+        'logbook:entries',
+        'medLedgerCleanV2',
+        'unboundRecoveryV1',
+        'ledgerNgV1',
+        'meridianCheckinV1',
+        'meridianGoalsV1',
+        'meridian:daytags',
+        'meridianWeights',
+        'meridianCompositeHistoryV1',
+      ];
+      const bundle: Record<string, any> = {};
+      if (typeof window !== 'undefined' && window.localStorage) {
+        for (const k of keys) {
+          const item = localStorage.getItem(k);
+          if (item) {
+            try {
+              bundle[k] = JSON.parse(item);
+            } catch {
+              bundle[k] = item;
+            }
+          }
+        }
+      }
+      return bundle;
+    } catch {
+      return {};
+    }
+  })();
 
   try {
     // 1. Try server-side proxy route first
@@ -185,7 +217,7 @@ export async function syncToSupabase(payload: Record<string, any>): Promise<Sync
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        data: payload,
+        data: resolvedPayload,
         timestamp,
       }),
     });
@@ -214,7 +246,7 @@ export async function syncToSupabase(payload: Record<string, any>): Promise<Sync
         .upsert(
           {
             id: 'current_user_state',
-            payload,
+            payload: resolvedPayload,
             updated_at: timestamp,
           },
           { onConflict: 'id' }

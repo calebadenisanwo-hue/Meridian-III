@@ -22,6 +22,15 @@ export const Haptics = {
     }
   },
 
+  /** 24ms medium tap for FAB, primary actions */
+  medium: () => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      try {
+        navigator.vibrate(24);
+      } catch {}
+    }
+  },
+
   /** Success pattern for saving, completing session, milestone */
   success: () => {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {

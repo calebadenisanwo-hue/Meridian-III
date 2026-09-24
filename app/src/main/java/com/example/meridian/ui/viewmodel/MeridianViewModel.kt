@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 data class MeridianUiState(
+    val isLoading: Boolean = false,
     val currentRoute: ModuleRoute = ModuleRoute.OVERVIEW,
     val palette: MaterialThemePalette = MaterialThemePalette.BOTANICAL,
     val themeMode: ThemeMode = ThemeMode.DARK,
@@ -204,12 +205,13 @@ class MeridianViewModel(private val repository: MeridianRepository) : ViewModel(
             todaysMove = move,
             scoreboard = sb,
             correlations = corr,
-            timeline = timelineItems
+            timeline = timelineItems,
+            isLoading = false
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = MeridianUiState()
+        initialValue = MeridianUiState(isLoading = true)
     )
 
     fun navigateTo(route: ModuleRoute) {

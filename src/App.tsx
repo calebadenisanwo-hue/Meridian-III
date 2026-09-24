@@ -12,6 +12,7 @@ import { CommandPalette } from './components/common/CommandPalette';
 import { QuickAddModal } from './components/common/QuickAddModal';
 import { SettingsModal } from './components/common/SettingsModal';
 import { DayDetailModal } from './components/common/DayDetailModal';
+import { SkeletonLoader } from './components/common/SkeletonLoader';
 
 // Views
 import { OverviewView } from './components/views/OverviewView';
@@ -51,6 +52,17 @@ export default function App() {
   // Re-render tick when storage changes
   const [dataVersion, setDataVersion] = useState(0);
   const triggerDataRefresh = useCallback(() => setDataVersion(v => v + 1), []);
+
+  // Material 3 Initial Skeleton Loading State
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  useEffect(() => {
+    // Brief initial load state to ensure smooth font loading and theme application
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false);
+    }, 450);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Dynamic Navigation Badges
   const badges = React.useMemo(() => {
@@ -186,36 +198,42 @@ export default function App() {
 
         {/* View Surface Area - Snappy & Instant */}
         <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-          <div key={currentRoute} className="m3-fade-enter">
-            {currentRoute === 'overview' && (
-              <OverviewView
-                onNavigate={setCurrentRoute}
-                onOpenDayDetail={date => setSelectedDayDetailDate(date)}
-                onOpenTimelineWithTag={handleOpenTimelineWithTag}
-              />
-            )}
+          {isInitialLoading ? (
+            <div className="m3-fade-enter">
+              <SkeletonLoader route={currentRoute} />
+            </div>
+          ) : (
+            <div key={currentRoute} className="m3-fade-enter">
+              {currentRoute === 'overview' && (
+                <OverviewView
+                  onNavigate={setCurrentRoute}
+                  onOpenDayDetail={date => setSelectedDayDetailDate(date)}
+                  onOpenTimelineWithTag={handleOpenTimelineWithTag}
+                />
+              )}
 
-            {currentRoute === 'timeline' && (
-              <TimelineView
-                initialTagFilter={timelineInitialTag}
-                onNavigate={setCurrentRoute}
-                onOpenDayDetail={date => setSelectedDayDetailDate(date)}
-                onOpenQuickAdd={() => setIsQuickAddOpen(true)}
-              />
-            )}
+              {currentRoute === 'timeline' && (
+                <TimelineView
+                  initialTagFilter={timelineInitialTag}
+                  onNavigate={setCurrentRoute}
+                  onOpenDayDetail={date => setSelectedDayDetailDate(date)}
+                  onOpenQuickAdd={() => setIsQuickAddOpen(true)}
+                />
+              )}
 
-            {currentRoute === 'journal' && <JournalView />}
+              {currentRoute === 'journal' && <JournalView />}
 
-            {currentRoute === 'study' && <StudyView />}
+              {currentRoute === 'study' && <StudyView />}
 
-            {currentRoute === 'recovery' && <RecoveryView />}
+              {currentRoute === 'recovery' && <RecoveryView />}
 
-            {currentRoute === 'finance' && <FinanceView />}
+              {currentRoute === 'finance' && <FinanceView />}
 
-            {currentRoute === 'checkin' && <PulseView />}
+              {currentRoute === 'checkin' && <PulseView />}
 
-            {currentRoute === 'goals' && <GoalsView />}
-          </div>
+              {currentRoute === 'goals' && <GoalsView />}
+            </div>
+          )}
         </main>
       </div>
 

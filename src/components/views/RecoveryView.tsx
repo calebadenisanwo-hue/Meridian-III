@@ -356,7 +356,7 @@ export const RecoveryView: React.FC = () => {
                             : 'bg-black/5 dark:bg-white/5 border-outline-variant opacity-40 grayscale'
                         }`}
                       >
-                        <div className="text-2xl mb-1">{milestone.badge}</div>
+                        <div className="text-2xl mb-1">{milestone.icon}</div>
                         <div className="text-xs font-bold leading-tight">{milestone.label}</div>
                         <div className="text-[10px] font-mono text-on-surface-variant mt-1">
                           {isUnlocked ? 'Achieved' : `${milestone.days} days`}
