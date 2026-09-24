@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example"
+    namespace = "com.example.meridian"
     compileSdk = 35
 
     defaultConfig {
