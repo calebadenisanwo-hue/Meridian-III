@@ -85,16 +85,17 @@ export const NavigationRail: React.FC<NavigationRailProps> = ({
   return (
     <>
       {/* ═══════════════════════════════════════════════════════════════
-          DESKTOP MATERIAL 3 NAVIGATION RAIL (w-64)
+          DESKTOP MATERIAL 3 NAVIGATION DRAWER (w-72 / 288dp)
+          Reference: https://m3.material.io/components/navigation-drawer/specs
           ═══════════════════════════════════════════════════════════════ */}
       <aside
-        className="hidden md:flex flex-col w-64 h-screen sticky top-0 border-r border-[var(--md-sys-color-outline-variant)] shrink-0 z-40 select-none transition-colors"
+        className="hidden md:flex flex-col w-72 h-screen sticky top-0 shrink-0 z-40 select-none transition-colors"
         style={{
           backgroundColor: 'var(--md-sys-color-surface-container-low)',
         }}
       >
         {/* Brand Header */}
-        <div className="p-6 pb-4 flex items-center justify-between">
+        <div className="px-6 py-6 pb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-xs"
@@ -116,9 +117,9 @@ export const NavigationRail: React.FC<NavigationRailProps> = ({
           </div>
         </div>
 
-        {/* All Desktop Destinations */}
+        {/* M3 Standard Navigation Drawer Items (56dp height, rounded-full) */}
         <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
-          <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-on-surface-variant font-bold">
+          <div className="px-4 py-2 text-[11px] font-mono uppercase tracking-wider text-on-surface-variant font-bold">
             Core Modules
           </div>
 
@@ -132,29 +133,28 @@ export const NavigationRail: React.FC<NavigationRailProps> = ({
                 key={item.route}
                 type="button"
                 onClick={() => handleNavClick(item.route)}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-xs font-medium transition-all m3-pressable ${
+                className={`w-full m3-drawer-item m3-pressable ${
                   isActive
-                    ? 'bg-[var(--md-sys-color-secondary-container)] text-[var(--md-sys-color-on-secondary-container)] font-semibold shadow-xs'
+                    ? 'bg-[var(--md-sys-color-secondary-container)] text-[var(--md-sys-color-on-secondary-container)] font-semibold'
                     : 'text-on-surface-variant hover:text-on-surface hover:bg-black/5 dark:hover:bg-white/5'
                 }`}
               >
                 <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center transition-transform ${
+                  className={`w-6 h-6 flex items-center justify-center transition-transform ${
                     isActive ? 'scale-105' : ''
                   }`}
                   style={{
-                    backgroundColor: isActive ? 'var(--md-sys-color-primary)' : 'transparent',
-                    color: isActive ? 'var(--md-sys-color-on-primary)' : 'inherit',
+                    color: isActive ? 'var(--md-sys-color-on-secondary-container)' : 'inherit',
                   }}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-5 h-5" />
                 </div>
 
-                <span className="truncate flex-1 text-left">{item.label}</span>
+                <span className="truncate flex-1 text-left text-sm">{item.label}</span>
 
                 {badgeVal !== undefined && badgeVal !== '' && (
                   <span
-                    className="px-2 py-0.5 text-[10px] font-mono rounded-full font-bold"
+                    className="px-2.5 py-0.5 text-[11px] font-mono rounded-full font-bold"
                     style={{
                       backgroundColor: isActive
                         ? 'var(--md-sys-color-primary)'
@@ -180,13 +180,13 @@ export const NavigationRail: React.FC<NavigationRailProps> = ({
                 Haptics.light();
                 onOpenSettings();
               }}
-              className="w-full flex items-center gap-2.5 px-3.5 py-2 rounded-full text-xs font-semibold text-on-surface-variant hover:text-on-surface hover:bg-black/5 dark:hover:bg-white/5 transition-all m3-pressable"
+              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-full text-xs font-semibold text-on-surface-variant hover:text-on-surface hover:bg-black/5 dark:hover:bg-white/5 transition-all m3-pressable"
             >
               <Settings2 className="w-4 h-4 text-primary" />
               <span>Settings & Preferences</span>
             </button>
           )}
-          <div className="flex items-center justify-between text-[10px] font-mono text-on-surface-variant/80 px-2">
+          <div className="flex items-center justify-between text-[11px] font-mono text-on-surface-variant/80 px-2">
             <span>Offline-First</span>
             <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
@@ -198,12 +198,12 @@ export const NavigationRail: React.FC<NavigationRailProps> = ({
 
       {/* ═══════════════════════════════════════════════════════════════
           MOBILE MATERIAL 3 BOTTOM NAVIGATION BAR (80dp height)
-          Reference: https://m3.material.io/components/navigation-bar/overview
+          Reference: https://m3.material.io/components/navigation-bar/specs
           ═══════════════════════════════════════════════════════════════ */}
       <div
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--md-sys-color-outline-variant)] backdrop-blur-2xl px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] flex items-center justify-around select-none transition-colors"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 h-20 pb-[env(safe-area-inset-bottom,0px)] flex items-center justify-around select-none transition-colors shadow-sm"
         style={{
-          backgroundColor: 'var(--md-sys-color-surface-container, rgba(29, 33, 30, 0.95))',
+          backgroundColor: 'var(--md-sys-color-surface-container)',
         }}
       >
         {/* 4 Core Primary Destinations */}

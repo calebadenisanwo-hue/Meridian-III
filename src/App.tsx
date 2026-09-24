@@ -220,21 +220,17 @@ export default function App() {
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════
-          MATERIAL 3 FLOATING ACTION BUTTON (FAB)
-          Canonical entry point for logging without repetitive buttons
+          MATERIAL 3 FLOATING ACTION BUTTON (Extended FAB: 56dp, 16dp squircle)
+          Reference: https://m3.material.io/components/floating-action-button/specs
           ═══════════════════════════════════════════════════════════════ */}
       <button
         onClick={handleFabClick}
         type="button"
-        className="fixed bottom-20 md:bottom-8 right-5 md:right-8 z-30 flex items-center gap-2 px-4 py-3.5 md:px-5 md:py-4 rounded-2xl md:rounded-3xl shadow-lg border border-[var(--md-sys-color-outline-variant)] m3-pressable transition-all hover:scale-105 active:scale-95 group"
-        style={{
-          backgroundColor: 'var(--md-sys-color-primary-container)',
-          color: 'var(--md-sys-color-on-primary-container)',
-        }}
+        className="fixed bottom-24 md:bottom-8 right-5 md:right-8 z-30 flex items-center gap-2.5 px-5 h-14 rounded-2xl m3-fab m3-pressable transition-all group"
         aria-label="Quick Add Entry"
       >
-        <Plus className="w-5 h-5 md:w-6 md:h-6 transition-transform group-hover:rotate-90 duration-200" />
-        <span className="font-bold text-xs md:text-sm font-display tracking-wide">
+        <Plus className="w-5 h-5 transition-transform group-hover:rotate-90 duration-200" />
+        <span className="font-semibold text-sm tracking-wide">
           Log Entry
         </span>
       </button>
