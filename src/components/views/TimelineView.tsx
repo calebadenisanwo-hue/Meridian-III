@@ -205,7 +205,7 @@ export const TimelineView: React.FC<TimelineViewProps> = ({
   ];
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in duration-200">
+    <div className="space-y-6 max-w-4xl mx-auto">
       {/* Filters Toolbar */}
       <div
         className="p-5 rounded-3xl border space-y-4"

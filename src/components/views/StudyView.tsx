@@ -178,7 +178,7 @@ export const StudyView: React.FC = () => {
   );
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in duration-200">
+    <div className="space-y-6 max-w-4xl mx-auto">
       {/* Sub-Navigation Tabs */}
       <div
         className="p-1.5 rounded-2xl border flex items-center gap-1 overflow-x-auto"

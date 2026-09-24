@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { Plus } from 'lucide-react';
 import { ModuleRoute, MaterialTheme, ThemeMode } from './types';
 import { MeridianStorage } from './services/storage';
 import { applyThemeVariables } from './theme/materialYou';
+import { Haptics } from './services/haptics';
 
 // Common Components
 import { Header } from './components/common/Header';
 import { NavigationRail } from './components/common/NavigationRail';
 import { CommandPalette } from './components/common/CommandPalette';
 import { QuickAddModal } from './components/common/QuickAddModal';
-import { ThemeSelectorModal } from './components/common/ThemeSelectorModal';
-import { BackupModal } from './components/common/BackupModal';
+import { SettingsModal } from './components/common/SettingsModal';
 import { DayDetailModal } from './components/common/DayDetailModal';
 
 // Views
@@ -44,8 +44,7 @@ export default function App() {
   // Modals state
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
-  const [isThemeModalOpen, setIsThemeModalOpen] = useState(false);
-  const [isBackupModalOpen, setIsBackupModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [selectedDayDetailDate, setSelectedDayDetailDate] = useState<string | null>(null);
   const [timelineInitialTag, setTimelineInitialTag] = useState<string | null>(null);
 
@@ -92,8 +91,7 @@ export default function App() {
     const isAnyModalOpen =
       isCommandPaletteOpen ||
       isQuickAddOpen ||
-      isThemeModalOpen ||
-      isBackupModalOpen ||
+      isSettingsModalOpen ||
       Boolean(selectedDayDetailDate);
 
     // Push history entry when opening modal so Android back gesture closes modal first
@@ -104,8 +102,7 @@ export default function App() {
     const handlePopState = () => {
       if (isCommandPaletteOpen) setIsCommandPaletteOpen(false);
       else if (isQuickAddOpen) setIsQuickAddOpen(false);
-      else if (isThemeModalOpen) setIsThemeModalOpen(false);
-      else if (isBackupModalOpen) setIsBackupModalOpen(false);
+      else if (isSettingsModalOpen) setIsSettingsModalOpen(false);
       else if (selectedDayDetailDate) setSelectedDayDetailDate(null);
       else if (currentRoute !== 'overview') {
         setCurrentRoute('overview');
@@ -117,8 +114,7 @@ export default function App() {
   }, [
     isCommandPaletteOpen,
     isQuickAddOpen,
-    isThemeModalOpen,
-    isBackupModalOpen,
+    isSettingsModalOpen,
     selectedDayDetailDate,
     currentRoute,
   ]);
@@ -136,7 +132,8 @@ export default function App() {
         e.key === 'q' &&
         !['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName) &&
         !isCommandPaletteOpen &&
-        !isQuickAddOpen
+        !isQuickAddOpen &&
+        !isSettingsModalOpen
       ) {
         e.preventDefault();
         setIsQuickAddOpen(true);
@@ -145,7 +142,7 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isCommandPaletteOpen, isQuickAddOpen]);
+  }, [isCommandPaletteOpen, isQuickAddOpen, isSettingsModalOpen]);
 
   const handleSelectTheme = (palette: MaterialTheme, mode: ThemeMode) => {
     setThemePalette(palette);
@@ -157,9 +154,14 @@ export default function App() {
     setCurrentRoute('timeline');
   };
 
+  const handleFabClick = () => {
+    Haptics.medium();
+    setIsQuickAddOpen(true);
+  };
+
   return (
     <div
-      className="min-h-screen flex flex-col md:flex-row font-sans transition-colors duration-300"
+      className="min-h-screen flex flex-col md:flex-row font-sans transition-colors duration-150"
       style={{
         backgroundColor: 'var(--md-sys-color-surface)',
         color: 'var(--md-sys-color-on-surface)',
@@ -169,67 +171,73 @@ export default function App() {
       <NavigationRail
         currentRoute={currentRoute}
         onNavigate={setCurrentRoute}
-        onOpenQuickAdd={() => setIsQuickAddOpen(true)}
+        onOpenSettings={() => setIsSettingsModalOpen(true)}
         badges={badges}
       />
 
       {/* 2. Main Content Column */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-screen pb-20 md:pb-8">
+      <div className="flex-1 flex flex-col min-w-0 min-h-screen pb-24 md:pb-8">
         {/* Top Header */}
         <Header
           currentRoute={currentRoute}
-          themePalette={themePalette}
-          themeMode={themeMode}
-          onNavigate={setCurrentRoute}
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
-          onOpenQuickAdd={() => setIsQuickAddOpen(true)}
-          onOpenThemeSelector={() => setIsThemeModalOpen(true)}
-          onOpenBackup={() => setIsBackupModalOpen(true)}
+          onOpenSettings={() => setIsSettingsModalOpen(true)}
         />
 
-        {/* View Surface Area */}
+        {/* View Surface Area - Snappy & Instant */}
         <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentRoute + '_' + dataVersion}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
-            >
-              {currentRoute === 'overview' && (
-                <OverviewView
-                  onNavigate={setCurrentRoute}
-                  onOpenQuickAdd={() => setIsQuickAddOpen(true)}
-                  onOpenDayDetail={date => setSelectedDayDetailDate(date)}
-                  onOpenTimelineWithTag={handleOpenTimelineWithTag}
-                />
-              )}
+          <div key={currentRoute} className="m3-fade-enter">
+            {currentRoute === 'overview' && (
+              <OverviewView
+                onNavigate={setCurrentRoute}
+                onOpenDayDetail={date => setSelectedDayDetailDate(date)}
+                onOpenTimelineWithTag={handleOpenTimelineWithTag}
+              />
+            )}
 
-              {currentRoute === 'timeline' && (
-                <TimelineView
-                  initialTagFilter={timelineInitialTag}
-                  onNavigate={setCurrentRoute}
-                  onOpenDayDetail={date => setSelectedDayDetailDate(date)}
-                  onOpenQuickAdd={() => setIsQuickAddOpen(true)}
-                />
-              )}
+            {currentRoute === 'timeline' && (
+              <TimelineView
+                initialTagFilter={timelineInitialTag}
+                onNavigate={setCurrentRoute}
+                onOpenDayDetail={date => setSelectedDayDetailDate(date)}
+                onOpenQuickAdd={() => setIsQuickAddOpen(true)}
+              />
+            )}
 
-              {currentRoute === 'journal' && <JournalView />}
+            {currentRoute === 'journal' && <JournalView />}
 
-              {currentRoute === 'study' && <StudyView />}
+            {currentRoute === 'study' && <StudyView />}
 
-              {currentRoute === 'recovery' && <RecoveryView />}
+            {currentRoute === 'recovery' && <RecoveryView />}
 
-              {currentRoute === 'finance' && <FinanceView />}
+            {currentRoute === 'finance' && <FinanceView />}
 
-              {currentRoute === 'checkin' && <PulseView />}
+            {currentRoute === 'checkin' && <PulseView />}
 
-              {currentRoute === 'goals' && <GoalsView />}
-            </motion.div>
-          </AnimatePresence>
+            {currentRoute === 'goals' && <GoalsView />}
+          </div>
         </main>
       </div>
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MATERIAL 3 FLOATING ACTION BUTTON (FAB)
+          Canonical entry point for logging without repetitive buttons
+          ═══════════════════════════════════════════════════════════════ */}
+      <button
+        onClick={handleFabClick}
+        type="button"
+        className="fixed bottom-20 md:bottom-8 right-5 md:right-8 z-30 flex items-center gap-2 px-4 py-3.5 md:px-5 md:py-4 rounded-2xl md:rounded-3xl shadow-lg border border-[var(--md-sys-color-outline-variant)] m3-pressable transition-all hover:scale-105 active:scale-95 group"
+        style={{
+          backgroundColor: 'var(--md-sys-color-primary-container)',
+          color: 'var(--md-sys-color-on-primary-container)',
+        }}
+        aria-label="Quick Add Entry"
+      >
+        <Plus className="w-5 h-5 md:w-6 md:h-6 transition-transform group-hover:rotate-90 duration-200" />
+        <span className="font-bold text-xs md:text-sm font-display tracking-wide">
+          Log Entry
+        </span>
+      </button>
 
       {/* 3. Global Modals */}
       <CommandPalette
@@ -237,8 +245,7 @@ export default function App() {
         onClose={() => setIsCommandPaletteOpen(false)}
         onNavigate={setCurrentRoute}
         onOpenQuickAdd={() => setIsQuickAddOpen(true)}
-        onOpenThemeSelector={() => setIsThemeModalOpen(true)}
-        onOpenBackup={() => setIsBackupModalOpen(true)}
+        onOpenSettings={() => setIsSettingsModalOpen(true)}
       />
 
       <QuickAddModal
@@ -247,17 +254,12 @@ export default function App() {
         onEntrySaved={triggerDataRefresh}
       />
 
-      <ThemeSelectorModal
-        isOpen={isThemeModalOpen}
-        onClose={() => setIsThemeModalOpen(false)}
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
         currentPalette={themePalette}
         currentMode={themeMode}
         onSelectTheme={handleSelectTheme}
-      />
-
-      <BackupModal
-        isOpen={isBackupModalOpen}
-        onClose={() => setIsBackupModalOpen(false)}
         onDataChanged={triggerDataRefresh}
       />
 

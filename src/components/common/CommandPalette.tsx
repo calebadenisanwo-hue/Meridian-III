@@ -8,8 +8,9 @@ interface CommandPaletteProps {
   onClose: () => void;
   onNavigate: (route: ModuleRoute) => void;
   onOpenQuickAdd: () => void;
-  onOpenThemeModal: () => void;
-  onOpenBackupModal: () => void;
+  onOpenSettings?: () => void;
+  onOpenThemeModal?: () => void;
+  onOpenBackupModal?: () => void;
 }
 
 interface SearchItem {
@@ -28,6 +29,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
   onClose,
   onNavigate,
   onOpenQuickAdd,
+  onOpenSettings,
   onOpenThemeModal,
   onOpenBackupModal,
 }) => {
@@ -145,7 +147,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         subtitle: 'Switch tonal seed colors & Dark/Light mode',
         action: () => {
           onClose();
-          onOpenThemeModal();
+          if (onOpenThemeModal) onOpenThemeModal();
+          else if (onOpenSettings) onOpenSettings();
         },
         icon: Palette,
         accentColor: 'var(--md-sys-color-tertiary)',
@@ -157,10 +160,23 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
         subtitle: 'Export full database or import previous backup',
         action: () => {
           onClose();
-          onOpenBackupModal();
+          if (onOpenBackupModal) onOpenBackupModal();
+          else if (onOpenSettings) onOpenSettings();
         },
         icon: Download,
         accentColor: '#90CAF9',
+      },
+      {
+        id: 'action-settings',
+        category: 'Quick Actions',
+        title: 'Settings & System Preferences',
+        subtitle: 'System weights, appearance, cloud sync & storage',
+        action: () => {
+          onClose();
+          if (onOpenSettings) onOpenSettings();
+        },
+        icon: Sparkles,
+        accentColor: 'var(--md-sys-color-primary)',
       },
     ];
 

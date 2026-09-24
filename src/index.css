@@ -17,7 +17,7 @@
     touch-action: manipulation;
   }
 
-  /* Android Safe Area insets */
+  /* Safe Area insets */
   .safe-top {
     padding-top: env(safe-area-inset-top, 0px);
   }
@@ -45,78 +45,121 @@
   }
 }
 
-/* Material You Elevation Surfaces */
-.surface-card {
-  background-color: var(--md-sys-color-surface-container, #1d211e);
-  color: var(--md-sys-color-on-surface, #e1e3df);
-  border: 1px solid var(--md-sys-color-outline-variant, rgba(255, 255, 255, 0.08));
-  border-radius: 1.5rem; /* 24px Material 3 standard */
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+/* ══════════════════════════════════════════════════════════════════════
+   MATERIAL DESIGN 3 (MATERIAL YOU) TONAL SURFACES & SHAPES
+   Reference: https://m3.material.io/styles/color/the-color-system/tokens
+   ══════════════════════════════════════════════════════════════════════ */
+
+.m3-surface {
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
 }
 
-.surface-card-high {
-  background-color: var(--md-sys-color-surface-container-high, #282b28);
-  color: var(--md-sys-color-on-surface, #e1e3df);
-  border: 1px solid var(--md-sys-color-outline-variant, rgba(255, 255, 255, 0.08));
-  border-radius: 1.5rem;
+.m3-surface-low {
+  background-color: var(--md-sys-color-surface-container-low);
+  color: var(--md-sys-color-on-surface);
 }
 
-.surface-card-highest {
-  background-color: var(--md-sys-color-surface-container-highest, #333633);
-  color: var(--md-sys-color-on-surface, #e1e3df);
-  border-radius: 1.5rem;
+.m3-surface-card {
+  background-color: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+  border-radius: 1.75rem; /* 28px - M3 shape extra-large */
+  transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.12s cubic-bezier(0.2, 0, 0, 1);
 }
 
-.surface-card-low {
-  background-color: var(--md-sys-color-surface-container-low, #191c1a);
-  color: var(--md-sys-color-on-surface, #e1e3df);
-  border-radius: 1.25rem;
+.m3-surface-high {
+  background-color: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  border-radius: 1.75rem;
 }
 
-/* Material You Pill button & active chips */
-.m3-pill {
-  border-radius: 9999px;
-  transition: all 0.18s cubic-bezier(0.2, 0, 0, 1);
+.m3-surface-highest {
+  background-color: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface);
+  border-radius: 1.75rem;
+}
+
+/* Material 3 Elevation Levels */
+.m3-elevation-1 {
+  box-shadow: 0 1px 3px 1px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.30);
+}
+
+.m3-elevation-2 {
+  box-shadow: 0 2px 6px 2px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.30);
+}
+
+.m3-elevation-3 {
+  box-shadow: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.30);
+}
+
+/* Material 3 Standard Interactive States (Ripple, Press) */
+.m3-pressable {
+  transition: transform 0.1s cubic-bezier(0.2, 0, 0, 1), opacity 0.1s ease;
+  user-select: none;
+}
+.m3-pressable:active {
+  transform: scale(0.97);
 }
 
 .m3-ripple {
   position: relative;
   overflow: hidden;
 }
-
 .m3-ripple::after {
   content: '';
   position: absolute;
   inset: 0;
   background-color: currentColor;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.1s ease;
   pointer-events: none;
 }
-
 .m3-ripple:hover::after {
   opacity: 0.08;
 }
-
 .m3-ripple:active::after {
   opacity: 0.16;
 }
 
-/* Custom Scrollbars in Material 3 Style */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Material 3 Navigation Bar Active Pill */
+.m3-nav-indicator {
+  width: 56px;
+  height: 32px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s cubic-bezier(0.2, 0, 0, 1), transform 0.15s cubic-bezier(0.2, 0, 0, 1);
 }
 
+/* Snappy View Transition */
+.m3-fade-enter {
+  animation: m3FadeIn 0.12s cubic-bezier(0.05, 0.7, 0.1, 1.0) forwards;
+}
+
+@keyframes m3FadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom Scrollbars in Material 3 Style */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
   background: var(--md-sys-color-outline-variant, #404943);
   border-radius: 9999px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
   background: var(--md-sys-color-outline, #8a938c);
 }

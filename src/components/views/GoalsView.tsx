@@ -115,7 +115,7 @@ export const GoalsView: React.FC = () => {
   const archivedGoals = state.goals.filter(g => !!g.archived);
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in duration-200">
+    <div className="space-y-6 max-w-4xl mx-auto">
       {/* Navigation and Add Button */}
       <div
         className="p-1.5 rounded-2xl border flex items-center justify-between gap-1 overflow-x-auto"

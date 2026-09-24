@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import {
   ShieldCheck,
   Award,
@@ -14,9 +14,47 @@ import confetti from 'canvas-confetti';
 import { RecoveryState, RecoveryQuit, RecoveryLog } from '../../types';
 import { MeridianStorage, fmtDateShort, todayStr, RECOVERY_MILESTONES } from '../../services/storage';
 
+// Memoized ticking component so the entire Recovery page does not re-render every second
+const CleanTimeClock: React.FC<{ quitTimestamp: number }> = memo(({ quitTimestamp }) => {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const diff = Math.max(0, now - quitTimestamp);
+  const totalSecs = Math.floor(diff / 1000);
+  const days = Math.floor(totalSecs / 86400);
+  const hours = Math.floor((totalSecs % 86400) / 3600);
+  const minutes = Math.floor((totalSecs % 3600) / 60);
+  const seconds = totalSecs % 60;
+
+  return (
+    <div className="grid grid-cols-4 gap-2 text-center p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-[var(--md-sys-color-outline-variant)]">
+      <div>
+        <div className="text-2xl sm:text-3xl font-bold font-mono text-primary tabular-nums">{days}</div>
+        <div className="text-[10px] uppercase font-mono text-on-surface-variant font-semibold">Days</div>
+      </div>
+      <div>
+        <div className="text-2xl sm:text-3xl font-bold font-mono text-on-surface tabular-nums">{hours}</div>
+        <div className="text-[10px] uppercase font-mono text-on-surface-variant font-semibold">Hours</div>
+      </div>
+      <div>
+        <div className="text-2xl sm:text-3xl font-bold font-mono text-on-surface tabular-nums">{minutes}</div>
+        <div className="text-[10px] uppercase font-mono text-on-surface-variant font-semibold">Minutes</div>
+      </div>
+      <div>
+        <div className="text-2xl sm:text-3xl font-bold font-mono text-on-surface tabular-nums">{seconds}</div>
+        <div className="text-[10px] uppercase font-mono text-on-surface-variant font-semibold">Seconds</div>
+      </div>
+    </div>
+  );
+});
+CleanTimeClock.displayName = 'CleanTimeClock';
+
 export const RecoveryView: React.FC = () => {
   const [state, setState] = useState<RecoveryState>(() => MeridianStorage.getRecovery());
-  const [now, setNow] = useState(Date.now());
   const [activeTab, setActiveTab] = useState<'quits' | 'vault' | 'history'>('quits');
 
   // Modal state for adding a new quit
@@ -29,20 +67,8 @@ export const RecoveryView: React.FC = () => {
   const [resetModalQuitId, setResetModalQuitId] = useState<string | null>(null);
   const [resetNote, setResetNote] = useState('');
 
-  // Live timer tick every second
-  useEffect(() => {
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const getCleanTimeParts = (quitTimestamp: number) => {
-    const diff = Math.max(0, now - quitTimestamp);
-    const totalSecs = Math.floor(diff / 1000);
-    const days = Math.floor(totalSecs / 86400);
-    const hours = Math.floor((totalSecs % 86400) / 3600);
-    const minutes = Math.floor((totalSecs % 3600) / 60);
-    const seconds = totalSecs % 60;
-    return { days, hours, minutes, seconds, totalSecs };
+  const getDaysClean = (quitTimestamp: number) => {
+    return Math.floor(Math.max(0, Date.now() - quitTimestamp) / 86400000);
   };
 
   const handleLogUrge = (quitId: string) => {
@@ -68,10 +94,11 @@ export const RecoveryView: React.FC = () => {
 
   const handleConfirmReset = () => {
     if (!resetModalQuitId) return;
-    const q = state.quits.find(x => x.id === resetModalQuitId);
+
+    const q = state.quits.find(item => item.id === resetModalQuitId);
     if (!q) return;
 
-    const { days } = getCleanTimeParts(q.quitTimestamp);
+    const days = getDaysClean(q.quitTimestamp);
     const longest = Math.max(q.longestCleanDays || 0, days);
 
     const updatedQuits = state.quits.map(item =>
@@ -143,7 +170,7 @@ export const RecoveryView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in duration-200">
+    <div className="space-y-6 max-w-4xl mx-auto m3-fade-enter">
       {/* Navigation Pills */}
       <div
         className="p-1.5 rounded-2xl border flex items-center justify-between gap-1 overflow-x-auto"
@@ -164,7 +191,7 @@ export const RecoveryView: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap m3-pressable ${
                   isActive
                     ? 'bg-primary-container text-on-primary-container shadow-sm'
                     : 'text-on-surface-variant hover:text-on-surface'
@@ -180,7 +207,7 @@ export const RecoveryView: React.FC = () => {
         <button
           onClick={() => setIsAddModalOpen(true)}
           type="button"
-          className="px-3.5 py-1.5 text-xs font-bold rounded-xl shadow-sm flex items-center gap-1.5 shrink-0"
+          className="px-3.5 py-1.5 text-xs font-bold rounded-xl shadow-sm flex items-center gap-1.5 shrink-0 m3-pressable"
           style={{
             backgroundColor: 'var(--md-sys-color-primary)',
             color: 'var(--md-sys-color-on-primary)',
@@ -217,7 +244,6 @@ export const RecoveryView: React.FC = () => {
           ) : (
             state.quits.map(quit => {
               const cat = state.categories.find(c => c.id === quit.categoryId);
-              const { days, hours, minutes, seconds } = getCleanTimeParts(quit.quitTimestamp);
 
               return (
                 <div
@@ -262,25 +288,8 @@ export const RecoveryView: React.FC = () => {
                     </button>
                   </div>
 
-                  {/* Clean Time Tickers in Material 3 Style */}
-                  <div className="grid grid-cols-4 gap-2 text-center p-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-outline-variant">
-                    <div>
-                      <div className="text-2xl sm:text-3xl font-bold font-mono text-primary">{days}</div>
-                      <div className="text-[10px] uppercase font-mono text-on-surface-variant">Days</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl sm:text-3xl font-bold font-mono text-on-surface">{hours}</div>
-                      <div className="text-[10px] uppercase font-mono text-on-surface-variant">Hours</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl sm:text-3xl font-bold font-mono text-on-surface">{minutes}</div>
-                      <div className="text-[10px] uppercase font-mono text-on-surface-variant">Minutes</div>
-                    </div>
-                    <div>
-                      <div className="text-2xl sm:text-3xl font-bold font-mono text-on-surface">{seconds}</div>
-                      <div className="text-[10px] uppercase font-mono text-on-surface-variant">Seconds</div>
-                    </div>
-                  </div>
+                  {/* Clean Time Tickers Isolated in Memoized Component */}
+                  <CleanTimeClock quitTimestamp={quit.quitTimestamp} />
 
                   {/* Urge & Reset Action Bar */}
                   <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
@@ -288,7 +297,7 @@ export const RecoveryView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleLogUrge(quit.id)}
-                        className="px-4 py-2 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-500/30 transition-all flex items-center gap-1.5"
+                        className="px-4 py-2 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-500/30 transition-all flex items-center gap-1.5 m3-pressable"
                       >
                         <Flame className="w-3.5 h-3.5 text-emerald-400" />
                         <span>Log Urge Survived ({quit.urgesLogged || 0})</span>
@@ -298,7 +307,7 @@ export const RecoveryView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setResetModalQuitId(quit.id)}
-                      className="px-3.5 py-2 text-xs font-semibold rounded-full border border-rose-500/40 text-rose-400 hover:bg-rose-500/10 transition-all"
+                      className="px-3.5 py-2 text-xs font-semibold rounded-full border border-rose-500/40 text-rose-400 hover:bg-rose-500/10 transition-all m3-pressable"
                     >
                       Log Slip / Reset Timer
                     </button>
@@ -314,12 +323,12 @@ export const RecoveryView: React.FC = () => {
       {activeTab === 'vault' && (
         <div className="space-y-6">
           {state.quits.map(quit => {
-            const { days } = getCleanTimeParts(quit.quitTimestamp);
+            const days = getDaysClean(quit.quitTimestamp);
 
             return (
               <div
                 key={quit.id}
-                className="p-6 rounded-3xl border space-y-4 shadow-sm"
+                className="p-6 rounded-3xl border shadow-sm space-y-4"
                 style={{
                   backgroundColor: 'var(--md-sys-color-surface-container)',
                   borderColor: 'var(--md-sys-color-outline-variant)',
@@ -327,41 +336,30 @@ export const RecoveryView: React.FC = () => {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-base font-bold font-display">{quit.name}</h3>
-                    <p className="text-xs text-on-surface-variant font-mono">{days} Continuous Clean Days</p>
+                    <h3 className="text-base font-bold font-display text-on-surface">{quit.name}</h3>
+                    <p className="text-xs text-on-surface-variant font-mono">
+                      Current Streak: <strong className="text-primary font-bold">{days} days</strong>
+                    </p>
                   </div>
-                  <span
-                    className="px-3 py-1 rounded-full text-xs font-mono font-bold"
-                    style={{
-                      backgroundColor: 'var(--md-sys-color-primary-container)',
-                      color: 'var(--md-sys-color-on-primary-container)',
-                    }}
-                  >
-                    {RECOVERY_MILESTONES.filter(m => days >= m.days).length}/{RECOVERY_MILESTONES.length} Unlocked
-                  </span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                  {RECOVERY_MILESTONES.map(m => {
-                    const isUnlocked = days >= m.days;
-                    const daysRemaining = Math.max(0, m.days - days);
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                  {RECOVERY_MILESTONES.map(milestone => {
+                    const isUnlocked = days >= milestone.days;
 
                     return (
                       <div
-                        key={m.days}
-                        className={`p-4 rounded-2xl border text-center flex flex-col items-center justify-between space-y-2 transition-all ${
+                        key={milestone.days}
+                        className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center justify-between ${
                           isUnlocked
-                            ? 'bg-amber-500/10 border-amber-500/40 shadow-sm'
-                            : 'bg-black/5 dark:bg-white/5 border-outline-variant opacity-40'
+                            ? 'bg-primary-container border-primary shadow-xs'
+                            : 'bg-black/5 dark:bg-white/5 border-outline-variant opacity-40 grayscale'
                         }`}
                       >
-                        <div className="text-2xl">{m.icon}</div>
-                        <div>
-                          <div className="text-xs font-bold">{m.label}</div>
-                          <div className="text-[10px] text-on-surface-variant font-mono">{m.sub}</div>
-                        </div>
-                        <div className="text-[10.5px] font-mono font-bold text-amber-400">
-                          {isUnlocked ? '✓ UNLOCKED' : `${daysRemaining}d away`}
+                        <div className="text-2xl mb-1">{milestone.badge}</div>
+                        <div className="text-xs font-bold leading-tight">{milestone.label}</div>
+                        <div className="text-[10px] font-mono text-on-surface-variant mt-1">
+                          {isUnlocked ? 'Achieved' : `${milestone.days} days`}
                         </div>
                       </div>
                     );
@@ -373,116 +371,117 @@ export const RecoveryView: React.FC = () => {
         </div>
       )}
 
-      {/* TAB 3: LOGS HISTORY */}
+      {/* TAB 3: URGE & RESET AUDIT TRAIL */}
       {activeTab === 'history' && (
         <div
-          className="rounded-3xl border divide-y overflow-hidden shadow-sm"
+          className="p-6 rounded-3xl border space-y-3"
           style={{
             backgroundColor: 'var(--md-sys-color-surface-container)',
             borderColor: 'var(--md-sys-color-outline-variant)',
           }}
         >
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-bold font-display text-on-surface">Urge & Reset Audit Trail</h3>
+            <span className="text-xs font-mono text-on-surface-variant">Telemetry log</span>
+          </div>
+
           {state.logs.length === 0 ? (
-            <div className="p-12 text-center text-xs text-on-surface-variant">
-              No recovery logs or cravings recorded yet.
-            </div>
+            <p className="text-xs text-on-surface-variant py-4">No events logged yet.</p>
           ) : (
-            state.logs.map(log => {
-              const q = state.quits.find(qq => qq.id === log.quitId);
-              return (
-                <div key={log.id} className="p-4 flex items-start justify-between gap-3">
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-semibold text-primary">
-                        {fmtDateShort(log.date)}
-                      </span>
+            <div className="space-y-2">
+              {state.logs.map(log => {
+                const quit = state.quits.find(q => q.id === log.quitId);
+                const isUrge = log.type === 'urge';
+
+                return (
+                  <div
+                    key={log.id}
+                    className="p-3 rounded-2xl bg-black/5 dark:bg-white/5 flex items-center justify-between gap-3 text-xs"
+                  >
+                    <div className="flex items-center gap-2.5">
                       <span
-                        className={`text-[10px] px-2 py-0.2 rounded-full font-mono font-semibold ${
-                          log.type === 'urge'
-                            ? 'bg-emerald-500/20 text-emerald-300'
-                            : 'bg-rose-500/20 text-rose-300'
+                        className={`w-2 h-2 rounded-full ${
+                          isUrge ? 'bg-emerald-400' : 'bg-rose-400'
                         }`}
-                      >
-                        {log.type === 'urge' ? 'Urge Survived' : 'Timer Reset'}
-                      </span>
-                      <span className="text-xs text-on-surface-variant font-medium">
-                        · {q?.name || 'Habit Target'}
-                      </span>
+                      />
+                      <div>
+                        <span className="font-semibold text-on-surface">{quit?.name || 'Habit'}</span>
+                        <span className="text-on-surface-variant ml-2">
+                          {isUrge ? 'Resisted temptation' : 'Timer reset'}
+                        </span>
+                        {log.note && <p className="text-[11px] text-on-surface-variant mt-0.5">{log.note}</p>}
+                      </div>
                     </div>
-                    {log.note && <p className="text-xs text-on-surface">{log.note}</p>}
+                    <span className="font-mono text-[10px] text-on-surface-variant shrink-0">{log.date}</span>
                   </div>
-                </div>
-              );
-            })
+                );
+              })}
+            </div>
           )}
         </div>
       )}
 
-      {/* Add Quit Modal */}
+      {/* Add Habit Modal */}
       {isAddModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md bg-black/60 animate-in fade-in duration-150"
-          onClick={e => {
-            if (e.target === e.currentTarget) setIsAddModalOpen(false);
-          }}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm m3-fade-enter">
           <div
-            className="w-full max-w-md rounded-3xl border shadow-2xl overflow-hidden p-6 space-y-4"
+            className="w-full max-w-md rounded-3xl border p-6 space-y-4 shadow-xl"
             style={{
               backgroundColor: 'var(--md-sys-color-surface-container)',
               borderColor: 'var(--md-sys-color-outline-variant)',
             }}
           >
-            <h3 className="text-base font-bold font-display">Track New Habit / Addiction</h3>
+            <h3 className="text-lg font-bold font-display text-on-surface">Track New Habit Cessation</h3>
             <form onSubmit={handleAddQuit} className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-on-surface-variant mb-1">Habit Name</label>
+                <label className="text-xs font-semibold text-on-surface-variant block mb-1">Habit Name</label>
                 <input
                   type="text"
                   required
+                  placeholder="e.g. Nicotine, Doomscrolling, Sugar"
                   value={newQuitName}
                   onChange={e => setNewQuitName(e.target.value)}
-                  placeholder="e.g. Sugar, Nicotine, Screen Time"
-                  className="w-full px-3 py-2 text-xs rounded-xl border bg-black/5 dark:bg-white/5 border-outline-variant text-on-surface"
+                  className="w-full px-3.5 py-2 rounded-xl border border-outline-variant bg-surface text-on-surface text-sm"
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-medium text-on-surface-variant mb-1">Category</label>
+                <label className="text-xs font-semibold text-on-surface-variant block mb-1">Category</label>
                 <select
                   value={newQuitCategory}
                   onChange={e => setNewQuitCategory(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border bg-black/5 dark:bg-white/5 border-outline-variant text-on-surface"
+                  className="w-full px-3.5 py-2 rounded-xl border border-outline-variant bg-surface text-on-surface text-sm"
                 >
                   {state.categories.map(c => (
-                    <option key={c.id} value={c.id} className="dark:bg-zinc-800">
-                      {c.name}
-                    </option>
+                    <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
               </div>
+
               <div>
-                <label className="block text-xs font-medium text-on-surface-variant mb-1">Primary Motivation</label>
+                <label className="text-xs font-semibold text-on-surface-variant block mb-1">Personal &lsquo;Why&rsquo; (Reason)</label>
                 <input
                   type="text"
+                  placeholder="e.g. Cognitive clarity and peak stamina"
                   value={newQuitReason}
                   onChange={e => setNewQuitReason(e.target.value)}
-                  placeholder="Why is this change non-negotiable?"
-                  className="w-full px-3 py-2 text-xs rounded-xl border bg-black/5 dark:bg-white/5 border-outline-variant text-on-surface"
+                  className="w-full px-3.5 py-2 rounded-xl border border-outline-variant bg-surface text-on-surface text-sm"
                 />
               </div>
-              <div className="flex justify-end gap-2 pt-2">
+
+              <div className="flex items-center justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-1.5 text-xs rounded-full border border-outline-variant"
+                  className="px-4 py-2 rounded-full text-xs font-semibold text-on-surface-variant hover:bg-black/5 dark:hover:bg-white/5"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-1.5 text-xs font-bold rounded-full bg-primary text-on-primary shadow-sm"
+                  className="px-5 py-2 rounded-full text-xs font-bold bg-primary text-on-primary shadow-sm"
                 >
-                  Start Tracking
+                  Start Streak
                 </button>
               </div>
             </form>
@@ -492,49 +491,42 @@ export const RecoveryView: React.FC = () => {
 
       {/* Slip / Reset Modal */}
       {resetModalQuitId && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md bg-black/60 animate-in fade-in duration-150"
-          onClick={e => {
-            if (e.target === e.currentTarget) setResetModalQuitId(null);
-          }}
-        >
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm m3-fade-enter">
           <div
-            className="w-full max-w-md rounded-3xl border shadow-2xl overflow-hidden p-6 space-y-4"
+            className="w-full max-w-md rounded-3xl border p-6 space-y-4 shadow-xl"
             style={{
               backgroundColor: 'var(--md-sys-color-surface-container)',
               borderColor: 'var(--md-sys-color-outline-variant)',
             }}
           >
-            <div className="flex items-center gap-2 text-rose-400">
-              <AlertCircle className="w-5 h-5" />
-              <h3 className="text-base font-bold font-display">Log Slip & Reset Timer</h3>
-            </div>
+            <h3 className="text-lg font-bold font-display text-rose-400">Log Reset & Begin Anew</h3>
             <p className="text-xs text-on-surface-variant leading-relaxed">
-              Recovery is non-linear. What matters is candid reflection and immediate recommitment.
+              A reset is objective feedback, not moral failure. Document the trigger to upgrade your environmental strategy.
             </p>
+
             <div>
-              <label className="block text-xs font-medium text-on-surface-variant mb-1">What triggered this slip?</label>
+              <label className="text-xs font-semibold text-on-surface-variant block mb-1">Trigger / Context</label>
               <textarea
                 rows={3}
-                required
+                placeholder="What was the environmental trigger or emotional state?"
                 value={resetNote}
                 onChange={e => setResetNote(e.target.value)}
-                placeholder="Identify root cause: stress, fatigue, boredom, context..."
-                className="w-full px-3 py-2 text-xs rounded-xl border bg-black/5 dark:bg-white/5 border-outline-variant text-on-surface"
+                className="w-full px-3.5 py-2 rounded-xl border border-outline-variant bg-surface text-on-surface text-sm"
               />
             </div>
-            <div className="flex justify-end gap-2 pt-2">
+
+            <div className="flex items-center justify-end gap-2 pt-1">
               <button
                 type="button"
                 onClick={() => setResetModalQuitId(null)}
-                className="px-4 py-1.5 text-xs rounded-full border border-outline-variant"
+                className="px-4 py-2 rounded-full text-xs font-semibold text-on-surface-variant hover:bg-black/5 dark:hover:bg-white/5"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleConfirmReset}
-                className="px-5 py-1.5 text-xs font-bold rounded-full bg-rose-600 text-white shadow-sm"
+                className="px-5 py-2 rounded-full text-xs font-bold bg-rose-500 text-white shadow-sm"
               >
                 Reset Timer
               </button>

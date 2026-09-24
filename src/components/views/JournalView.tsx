@@ -189,7 +189,7 @@ export const JournalView: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in duration-200">
+    <div className="space-y-6 max-w-4xl mx-auto">
       {/* Rich Composer Card */}
       <div
         className="rounded-3xl p-6 border shadow-sm space-y-4"

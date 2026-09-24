@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   LayoutDashboard,
   Clock,
@@ -9,7 +9,10 @@ import {
   Activity,
   Target,
   Sparkles,
-  Plus,
+  MoreHorizontal,
+  Settings2,
+  X,
+  ChevronRight,
 } from 'lucide-react';
 import { ModuleRoute } from '../../types';
 import { Haptics } from '../../services/haptics';
@@ -17,133 +20,127 @@ import { Haptics } from '../../services/haptics';
 interface NavigationRailProps {
   currentRoute: ModuleRoute;
   onNavigate: (route: ModuleRoute) => void;
-  onOpenQuickAdd?: () => void;
+  onOpenSettings?: () => void;
   badges?: Record<string, string | number>;
 }
 
-const NAV_ITEMS: {
+const PRIMARY_NAV_ITEMS: {
   route: ModuleRoute;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+}[] = [
+  { route: 'overview', label: 'Overview', icon: LayoutDashboard },
+  { route: 'journal', label: 'Logbook', icon: BookOpen },
+  { route: 'study', label: 'Study', icon: GraduationCap },
+  { route: 'recovery', label: 'Unbound', icon: ShieldCheck },
+  { route: 'finance', label: 'Finance', icon: Wallet },
+];
+
+const MORE_NAV_ITEMS: {
+  route: ModuleRoute;
+  label: string;
+  subtitle: string;
+  icon: React.ComponentType<{ className?: string }>;
   accentColor: string;
 }[] = [
-  { route: 'overview', label: 'Overview', icon: LayoutDashboard, accentColor: 'var(--md-sys-color-primary)' },
-  { route: 'timeline', label: 'Timeline', icon: Clock, accentColor: '#C77DFF' },
-  { route: 'journal', label: 'Journal', icon: BookOpen, accentColor: '#2D6A4F' },
-  { route: 'study', label: 'Study', icon: GraduationCap, accentColor: '#22A566' },
-  { route: 'recovery', label: 'Unbound', icon: ShieldCheck, accentColor: '#D3A346' },
-  { route: 'finance', label: 'Finance', icon: Wallet, accentColor: '#4FA9E0' },
-  { route: 'checkin', label: 'Pulse', icon: Activity, accentColor: '#F0A8C4' },
-  { route: 'goals', label: 'Goals', icon: Target, accentColor: '#E8B368' },
+  {
+    route: 'checkin',
+    label: 'Pulse Check-in',
+    subtitle: 'Daily sleep, mood & recursive habits',
+    icon: Activity,
+    accentColor: '#E0574B',
+  },
+  {
+    route: 'goals',
+    label: 'Goals & Targets',
+    subtitle: 'Active milestones & step progress',
+    icon: Target,
+    accentColor: '#E8B368',
+  },
+  {
+    route: 'timeline',
+    label: 'Timeline Stream',
+    subtitle: 'Cross-module audit trail',
+    icon: Clock,
+    accentColor: '#C77DFF',
+  },
 ];
 
 export const NavigationRail: React.FC<NavigationRailProps> = ({
   currentRoute,
   onNavigate,
-  onOpenQuickAdd,
+  onOpenSettings,
   badges = {},
 }) => {
+  const [isMoreSheetOpen, setIsMoreSheetOpen] = useState(false);
+
   const handleNavClick = (route: ModuleRoute) => {
     Haptics.selection();
     onNavigate(route);
+    setIsMoreSheetOpen(false);
   };
 
-  const handleQuickAddClick = () => {
-    Haptics.light();
-    onOpenQuickAdd?.();
-  };
+  const isMoreRouteActive = MORE_NAV_ITEMS.some(item => item.route === currentRoute);
 
   return (
     <>
-      {/* Desktop Navigation Rail */}
+      {/* ═══════════════════════════════════════════════════════════════
+          DESKTOP MATERIAL 3 NAVIGATION RAIL (w-64)
+          ═══════════════════════════════════════════════════════════════ */}
       <aside
-        className="hidden md:flex flex-col w-64 h-screen sticky top-0 border-r shrink-0 z-40 select-none transition-colors"
+        className="hidden md:flex flex-col w-64 h-screen sticky top-0 border-r border-[var(--md-sys-color-outline-variant)] shrink-0 z-40 select-none transition-colors"
         style={{
           backgroundColor: 'var(--md-sys-color-surface-container-low)',
-          borderColor: 'var(--md-sys-color-outline-variant)',
         }}
       >
-        {/* Brand */}
-        <div className="p-5 pb-4 flex items-center justify-between">
+        {/* Brand Header */}
+        <div className="p-6 pb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
-              className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-md relative overflow-hidden"
-              style={{
-                background: 'linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-secondary) 100%)',
-                color: 'var(--md-sys-color-on-primary)',
-              }}
-            >
-              <Sparkles className="w-5 h-5 animate-pulse" />
-            </div>
-            <div>
-              <div className="text-base font-bold font-display tracking-tight text-on-surface flex items-center gap-1.5">
-                <span>Meridian</span>
-              </div>
-              <div className="text-[11px] font-mono tracking-wider uppercase text-on-surface-variant">
-                Personal Systems
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Add Action Button in Rail */}
-        {onOpenQuickAdd && (
-          <div className="px-3 pb-2">
-            <button
-              type="button"
-              onClick={handleQuickAddClick}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl font-semibold text-xs transition-all shadow-sm active:scale-[0.98] hover:shadow"
+              className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-xs"
               style={{
                 backgroundColor: 'var(--md-sys-color-primary)',
                 color: 'var(--md-sys-color-on-primary)',
               }}
             >
-              <Plus className="w-4 h-4" />
-              <span>Quick Log (Q)</span>
-            </button>
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-base font-bold font-display tracking-tight text-on-surface">
+                Meridian
+              </div>
+              <div className="text-[11px] font-mono tracking-wider uppercase text-on-surface-variant">
+                Systems OS
+              </div>
+            </div>
           </div>
-        )}
+        </div>
 
-        {/* Divider */}
-        <div
-          className="h-[2px] mx-5 my-1 rounded-full opacity-60"
-          style={{
-            background: 'linear-gradient(90deg, var(--md-sys-color-primary), var(--md-sys-color-tertiary), var(--md-sys-color-secondary))',
-          }}
-        />
+        {/* All Desktop Destinations */}
+        <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
+          <div className="px-3 py-1.5 text-[10px] font-mono uppercase tracking-wider text-on-surface-variant font-bold">
+            Core Modules
+          </div>
 
-        {/* Navigation Items */}
-        <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
-          {NAV_ITEMS.map(item => {
+          {[...PRIMARY_NAV_ITEMS, ...MORE_NAV_ITEMS].map(item => {
             const Icon = item.icon;
             const isActive = currentRoute === item.route;
-            const badgeValue = badges?.[item.route];
+            const badgeVal = badges?.[item.route];
 
             return (
               <button
                 key={item.route}
                 type="button"
                 onClick={() => handleNavClick(item.route)}
-                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-xs md:text-sm font-medium transition-all group relative m3-ripple ${
-                  isActive ? 'shadow-sm font-semibold' : 'hover:bg-black/5 dark:hover:bg-white/5'
+                className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-xs font-medium transition-all m3-pressable ${
+                  isActive
+                    ? 'bg-[var(--md-sys-color-secondary-container)] text-[var(--md-sys-color-on-secondary-container)] font-semibold shadow-xs'
+                    : 'text-on-surface-variant hover:text-on-surface hover:bg-black/5 dark:hover:bg-white/5'
                 }`}
-                style={{
-                  backgroundColor: isActive ? 'var(--md-sys-color-primary-container)' : 'transparent',
-                  color: isActive ? 'var(--md-sys-color-on-primary-container)' : 'var(--md-sys-color-on-surface-variant)',
-                }}
               >
-                {/* Active Indicator Bar */}
-                {isActive && (
-                  <span
-                    className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-6 rounded-full"
-                    style={{ backgroundColor: 'var(--md-sys-color-primary)' }}
-                  />
-                )}
-
-                {/* Icon in container */}
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                    isActive ? 'scale-105' : 'group-hover:scale-105'
+                  className={`w-7 h-7 rounded-full flex items-center justify-center transition-transform ${
+                    isActive ? 'scale-105' : ''
                   }`}
                   style={{
                     backgroundColor: isActive ? 'var(--md-sys-color-primary)' : 'transparent',
@@ -155,16 +152,19 @@ export const NavigationRail: React.FC<NavigationRailProps> = ({
 
                 <span className="truncate flex-1 text-left">{item.label}</span>
 
-                {/* Badge if present */}
-                {badgeValue !== undefined && badgeValue !== '' && (
+                {badgeVal !== undefined && badgeVal !== '' && (
                   <span
-                    className="px-2 py-0.5 text-[10.5px] font-mono rounded-full font-semibold shrink-0"
+                    className="px-2 py-0.5 text-[10px] font-mono rounded-full font-bold"
                     style={{
-                      backgroundColor: isActive ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-surface-container-high)',
-                      color: isActive ? 'var(--md-sys-color-on-primary)' : 'var(--md-sys-color-on-surface-variant)',
+                      backgroundColor: isActive
+                        ? 'var(--md-sys-color-primary)'
+                        : 'var(--md-sys-color-surface-container-high)',
+                      color: isActive
+                        ? 'var(--md-sys-color-on-primary)'
+                        : 'var(--md-sys-color-on-surface-variant)',
                     }}
                   >
-                    {badgeValue}
+                    {badgeVal}
                   </span>
                 )}
               </button>
@@ -172,31 +172,42 @@ export const NavigationRail: React.FC<NavigationRailProps> = ({
           })}
         </nav>
 
-        {/* Footer info */}
-        <div
-          className="p-4 border-t text-[11px] text-on-surface-variant space-y-1"
-          style={{ borderColor: 'var(--md-sys-color-outline-variant)' }}
-        >
-          <div className="flex items-center justify-between font-mono">
-            <span>Systems Online</span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
-              <span className="text-emerald-400 font-semibold">6 Modules</span>
+        {/* Desktop Footer with Settings */}
+        <div className="p-4 border-t border-[var(--md-sys-color-outline-variant)] space-y-2">
+          {onOpenSettings && (
+            <button
+              onClick={() => {
+                Haptics.light();
+                onOpenSettings();
+              }}
+              className="w-full flex items-center gap-2.5 px-3.5 py-2 rounded-full text-xs font-semibold text-on-surface-variant hover:text-on-surface hover:bg-black/5 dark:hover:bg-white/5 transition-all m3-pressable"
+            >
+              <Settings2 className="w-4 h-4 text-primary" />
+              <span>Settings & Preferences</span>
+            </button>
+          )}
+          <div className="flex items-center justify-between text-[10px] font-mono text-on-surface-variant/80 px-2">
+            <span>Offline-First</span>
+            <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse" />
+              Online
             </span>
           </div>
-          <p className="text-[10px] text-on-surface-variant/80">Offline-first · Material You v3</p>
         </div>
       </aside>
 
-      {/* Mobile Bottom Navigation Bar (Material 3 style with gesture pill safe-area) */}
+      {/* ═══════════════════════════════════════════════════════════════
+          MOBILE MATERIAL 3 BOTTOM NAVIGATION BAR (80dp height)
+          Reference: https://m3.material.io/components/navigation-bar/overview
+          ═══════════════════════════════════════════════════════════════ */}
       <div
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t backdrop-blur-xl px-1.5 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] flex items-center justify-around select-none"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-[var(--md-sys-color-outline-variant)] backdrop-blur-2xl px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] flex items-center justify-around select-none transition-colors"
         style={{
-          backgroundColor: 'var(--md-sys-color-surface-container-high, rgba(30, 32, 28, 0.95))',
-          borderColor: 'var(--md-sys-color-outline-variant)',
+          backgroundColor: 'var(--md-sys-color-surface-container, rgba(29, 33, 30, 0.95))',
         }}
       >
-        {NAV_ITEMS.map(item => {
+        {/* 4 Core Primary Destinations */}
+        {PRIMARY_NAV_ITEMS.map(item => {
           const Icon = item.icon;
           const isActive = currentRoute === item.route;
 
@@ -205,27 +216,157 @@ export const NavigationRail: React.FC<NavigationRailProps> = ({
               key={item.route}
               type="button"
               onClick={() => handleNavClick(item.route)}
-              className="flex flex-col items-center gap-0.5 px-2 py-1 relative active:scale-95 transition-transform"
-              style={{
-                color: isActive ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-on-surface-variant)',
-              }}
+              className="flex flex-col items-center gap-1 py-1 px-1 flex-1 m3-pressable"
             >
+              {/* Official M3 Active Pill Indicator */}
               <div
-                className={`px-3 py-1 rounded-full transition-all flex items-center justify-center ${
-                  isActive ? 'scale-105 shadow-sm' : ''
-                }`}
+                className={`m3-nav-indicator ${isActive ? 'shadow-xs' : ''}`}
                 style={{
-                  backgroundColor: isActive ? 'var(--md-sys-color-primary-container)' : 'transparent',
-                  color: isActive ? 'var(--md-sys-color-on-primary-container)' : 'inherit',
+                  backgroundColor: isActive
+                    ? 'var(--md-sys-color-secondary-container)'
+                    : 'transparent',
+                  color: isActive
+                    ? 'var(--md-sys-color-on-secondary-container)'
+                    : 'var(--md-sys-color-on-surface-variant)',
                 }}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-5 h-5" />
               </div>
-              <span className="text-[9.5px] font-medium leading-none tracking-tight">{item.label}</span>
+              <span
+                className={`text-[11px] tracking-tight leading-none ${
+                  isActive
+                    ? 'font-bold text-on-surface'
+                    : 'font-medium text-on-surface-variant'
+                }`}
+              >
+                {item.label}
+              </span>
             </button>
           );
         })}
+
+        {/* 5th Destination: "More" for secondary modules */}
+        <button
+          type="button"
+          onClick={() => {
+            Haptics.selection();
+            setIsMoreSheetOpen(true);
+          }}
+          className="flex flex-col items-center gap-1 py-1 px-1 flex-1 m3-pressable"
+        >
+          <div
+            className={`m3-nav-indicator ${isMoreRouteActive ? 'shadow-xs' : ''}`}
+            style={{
+              backgroundColor: isMoreRouteActive
+                ? 'var(--md-sys-color-secondary-container)'
+                : 'transparent',
+              color: isMoreRouteActive
+                ? 'var(--md-sys-color-on-secondary-container)'
+                : 'var(--md-sys-color-on-surface-variant)',
+            }}
+          >
+            <MoreHorizontal className="w-5 h-5" />
+          </div>
+          <span
+            className={`text-[11px] tracking-tight leading-none ${
+              isMoreRouteActive
+                ? 'font-bold text-on-surface'
+                : 'font-medium text-on-surface-variant'
+            }`}
+          >
+            More
+          </span>
+        </button>
       </div>
+
+      {/* ═══════════════════════════════════════════════════════════════
+          MOBILE "MORE" MATERIAL 3 BOTTOM SHEET
+          ═══════════════════════════════════════════════════════════════ */}
+      {isMoreSheetOpen && (
+        <div
+          className="md:hidden fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-sm m3-fade-enter"
+          onClick={e => {
+            if (e.target === e.currentTarget) setIsMoreSheetOpen(false);
+          }}
+        >
+          <div
+            className="w-full rounded-t-3xl border-t border-[var(--md-sys-color-outline-variant)] shadow-2xl p-5 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] space-y-4"
+            style={{
+              backgroundColor: 'var(--md-sys-color-surface-container-high)',
+              color: 'var(--md-sys-color-on-surface)',
+            }}
+          >
+            {/* Sheet Handle */}
+            <div className="w-10 h-1 rounded-full bg-[var(--md-sys-color-outline-variant)] mx-auto" />
+
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-bold font-display text-on-surface">More Systems</h3>
+                <p className="text-xs text-on-surface-variant">Telemetry, objectives & system preferences</p>
+              </div>
+              <button
+                onClick={() => setIsMoreSheetOpen(false)}
+                className="p-1.5 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-on-surface-variant"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              {MORE_NAV_ITEMS.map(item => {
+                const Icon = item.icon;
+                const isActive = currentRoute === item.route;
+
+                return (
+                  <button
+                    key={item.route}
+                    type="button"
+                    onClick={() => handleNavClick(item.route)}
+                    className={`w-full flex items-center gap-3.5 p-3 rounded-2xl border text-left transition-all m3-pressable ${
+                      isActive
+                        ? 'bg-[var(--md-sys-color-secondary-container)] border-[var(--md-sys-color-primary)]'
+                        : 'bg-[var(--md-sys-color-surface-container)] border-[var(--md-sys-color-outline-variant)]'
+                    }`}
+                  >
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs"
+                      style={{ backgroundColor: item.accentColor }}
+                    >
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-bold text-on-surface">{item.label}</div>
+                      <div className="text-xs text-on-surface-variant truncate">{item.subtitle}</div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-on-surface-variant shrink-0" />
+                  </button>
+                );
+              })}
+
+              {/* Settings Shortcut inside More */}
+              {onOpenSettings && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMoreSheetOpen(false);
+                    onOpenSettings();
+                  }}
+                  className="w-full flex items-center gap-3.5 p-3 rounded-2xl bg-[var(--md-sys-color-surface-container)] border border-[var(--md-sys-color-outline-variant)] text-left m3-pressable"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-[var(--md-sys-color-primary)] flex items-center justify-center text-[var(--md-sys-color-on-primary)] shrink-0 shadow-xs">
+                    <Settings2 className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-bold text-on-surface">Settings & Preferences</div>
+                    <div className="text-xs text-on-surface-variant">Theme, weights & cloud backup</div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-on-surface-variant shrink-0" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -97,7 +97,7 @@ export const PulseView: React.FC = () => {
   const last7Days = Array.from({ length: 7 }, (_, i) => daysAgoStr(6 - i));
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in duration-200">
+    <div className="space-y-6 max-w-4xl mx-auto">
       {/* Sub tabs */}
       <div
         className="p-1.5 rounded-2xl border flex items-center justify-between gap-1 overflow-x-auto"
