@@ -338,6 +338,12 @@ class MeridianViewModel(private val repository: MeridianRepository) : ViewModel(
         }
     }
 
+    fun deleteTransaction(id: String) {
+        viewModelScope.launch {
+            repository.deleteTransaction(id)
+        }
+    }
+
     // Pulse actions
     fun logPulse(sleepHours: Float?, sleepQuality: Int?, mood: Int?, energy: Int?, focus: Int?, note: String?) {
         viewModelScope.launch {
@@ -385,6 +391,12 @@ class MeridianViewModel(private val repository: MeridianRepository) : ViewModel(
                 deadline = deadline
             )
             repository.insertGoal(goal)
+        }
+    }
+
+    fun deleteGoal(id: String) {
+        viewModelScope.launch {
+            repository.deleteGoal(id)
         }
     }
 }
