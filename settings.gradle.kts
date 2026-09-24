@@ -1,6 +1,3 @@
-gradle.startParameter.projectProperties["android.useAndroidX"] = "true"
-gradle.startParameter.projectProperties["android.nonTransitiveRClass"] = "true"
-
 pluginManagement {
     repositories {
         google()

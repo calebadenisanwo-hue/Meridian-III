@@ -42,6 +42,10 @@ jobs:
 
       - name: Build Android Debug APK
         run: |
+          chmod +x ./gradlew || true
+          mkdir -p ~/.gradle
+          echo "android.useAndroidX=true" >> ~/.gradle/gradle.properties
+          echo "android.nonTransitiveRClass=true" >> ~/.gradle/gradle.properties
           gradle :app:assembleDebug -Pandroid.useAndroidX=true -Pandroid.nonTransitiveRClass=true --no-daemon --stacktrace
 
       - name: Prepare APK Files
